@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  sshte-mysql-server:
+    image: mysql:5.7.23
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      MYSQL_DATABASE:  test
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    networks:
+      - behind_vpn
+    container_name: sshte-mysql-server
+
+  sshte-vpn:
+    image: rastasheep/ubuntu-sshd:18.04
+    restart: always
+    depends_on:
+      - sshte-mysql-server
+    networks:
+      - behind_vpn
+      - public_network
+    container_name: sshte-vpn
+
+  sshte-mysql-client:
+    build: .
+    restart: always
+    depends_on:
+      - sshte-vpn
+    networks:
+      - public_network
+    container_name: sshte-mysql-client
+
+networks:
+  behind_vpn:
+  public_network:
